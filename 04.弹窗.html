@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.26/"></script>
+    <style>
+        html,body,
+     .box {
+        width: 100%;
+        height: 100%;
+     }
+    </style>
+    <script>
+        require(["esri/rest/locator", "esri/Map", "esri/views/MapView"], (locator, Map, MapView) => {
+            const locatorUrl = "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer";
+            const map = new Map({
+                basemap: 'streets-navigation-vector'//生成底图
+            });
+            const view = new MapView({
+                container: 'viewDiv',//容器
+                map: map,//映射
+                center: [117.00739, 39.14111],//经纬度
+                zoom: 12//缩放
+            });
+            view.popup.autoOpenEnabled=false//阻止点击事件传播默认true
+            view.on('click', (event) => {//点击获取经纬度
+                console.log(event);
+                const lat=Math.round(event.mapPoint.latitude*1000)/1000
+                const lon=Math.round(event.mapPoint.longitude*1000)/1000
+                console.log(lat);
+
+                view.popup.open({//弹出层
+                    title:"Reverse geocode:["+lon+","+lat+"]",
+                    location:event.mapPoint
+                })
+                const params={
+                    location:event.mapPoint
+                };
+                locator.locationToAddress(locatorUrl,params)//定位器查找位置
+                .then((response)=>{
+                   view.popup.content=response.address;
+                }).catch(()=>{
+                    view.popup.content='未找到位置'
+                })
+            })
+        })
+    </script>
+</head>
+
+<body>
+    <div id="viewDiv" class="box">11</div>
+</body>
+
+</html>

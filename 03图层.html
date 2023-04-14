@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,
+        body,
+        #viewDiv {
+          padding: 0;
+          margin: 0;
+          height: 100%;
+          width: 100%;
+        }
+  
+        #layerToggle {
+          top: 20px;
+          right: 20px;
+          position: absolute;
+          z-index: 99;
+          background-color: white;
+          border-radius: 8px;
+          padding: 10px;
+          opacity: 0.75;
+        }
+      </style>
+<link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css" />
+<script src="https://js.arcgis.com/4.26/"></script>
+<script>
+   require(["esri/Map", "esri/views/MapView", "esri/layers/TileLayer"], (Map, MapView, TileLayer) => {
+        //设置两个图层
+        const transportationLayer = new TileLayer({
+            url: 'https://server.arcgisonline.com/arcgis/rest/services/Reference/World_Transportation/MapServer',
+            id: 'streets',
+            visible:false
+        });
+        const housingLayer = new TileLayer({
+            url: 'https://tiles.arcgis.com/tiles/nGt4QxSblgDfeJn9/arcgis/rest/services/New_York_Housing_Density/MapServe',
+            id: 'ny-housing',
+            opacity:0.9
+        })
+
+        const map = new Map({
+            basemap: 'coeans',
+            lanyers: [housingLayer]
+        });
+        map.add(transportationLayer);
+
+        const view = new MapView({
+            container: 'viewDiv',
+            map: map
+        });
+       
+        view.on("layerview-create", (event) => {
+            console.log(event.layer.id=="streets");
+            if (event.layer.id === "ny-housing") {
+                // Explore the properties of the housing layer's layer view here
+                console.log("LayerView for New York housing density created!", event.layerView);
+                console.log(111);
+            }
+            if (event.layer.id === "streets") {
+                // Explore the properties of the transportation layer's layer view here
+                console.log("LayerView for streets created!", event.layerView);
+                console.log(222);
+            }
+        });
+        view.when(() => {
+          housingLayer.when(() => {
+            view.goTo(housingLayer.fullExtent)
+            .catch((error) => {
+              console.error(error);
+            });
+          });
+        });
+
+    const streetsLayerToggle = document.getElementById("streetsLayer");
+       
+        
+        
+        streetsLayerToggle.addEventListener("change", () => {
+            // When the checkbox is checked (true), set the layer's visibility to true
+            transportationLayer.visible = streetsLayerToggle.checked;
+        });
+        });
+    
+</script>
+</head>
+<body>
+    <div id="viewDiv"></div>
+    <span id="layerToggle" class="esri-widget">
+        <input type="checkbox" id="streetsLayer" />123313</span>
+
+</body>
+
+</html>
